@@ -112,6 +112,13 @@ public class Comment {
         return comment;
     }
 
+    /**
+     * deleteComment
+     * Connects to the database using the mongoclient and queries the database to delete the requested record
+     * @param commentInt - The Id of the comment we want to delete
+     * @param mongo - Our mongoclient to connect to the DB
+     * @return
+     */
     public String deleteComment(Integer commentInt, MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
@@ -131,30 +138,15 @@ public class Comment {
         return "Success";
     }
 
-
-    public String updatePost(Integer postInt, String postString,  MongoClient mongo){
-        MongoCredential credential;
-        credential = MongoCredential.createCredential("sampleUser", "myDb",
-                "password".toCharArray());
-        System.out.println("Connected to the database successfully");
-
-        // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat");
-        System.out.println("Credentials ::"+ credential);
-        MongoCollection<Document> collection = database.getCollection("Posts");
-        Document query = new Document();
-        query.append("Id","postInt");
-        Document setData = new Document();
-        setData.append("post", postString);
-        Document update = new Document();
-        update.append("$set", setData);
-        //To update single Document
-        collection.updateOne(query, update);
-        return "Success";
-    }
-
-
-    //Updates the comment text to the passed variable
+    /**
+     * updateComment
+     * Connects to the database using the mongoclient and queries the database to get the comment we want to update
+     * Once retrieved we send across our update request
+     * @param commentInt - The Id of the comment we want to update
+     * @param commentString - The new reply string that we want to update
+     * @param mongo - Our mongoclient to connect to the DB
+     * @return
+     */
     public String updateComment(Integer commentInt, String commentString, MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
@@ -169,59 +161,14 @@ public class Comment {
         return "Success";
     }
 
-    public List<Document> getComment(Integer commentInt, MongoClient mongo){
-        MongoCredential credential;
-        credential = MongoCredential.createCredential("sampleUser", "myDb",
-                "password".toCharArray());
-        System.out.println("Connected to the database successfully");
-
-        // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat");
-        System.out.println("Credentials ::"+ credential);
-
-
-        // Retrieving a collection
-
-        // Retrieving a collection
-        MongoCollection<Document> collection = database.getCollection("Comments");
-        FindIterable<Document> postsIt =  collection.find(eq("id", commentInt));
-        List<Document> docs = new ArrayList<Document>();
-        for (Document document : postsIt) {
-            docs.add(document);
-            System.out.println(document);
-        }
-
-        return docs;
-    }
-
-
-    public List<Document> getPostList(Integer postInt, MongoClient mongo){
-        MongoCredential credential;
-        credential = MongoCredential.createCredential("sampleUser", "myDb",
-                "password".toCharArray());
-        System.out.println("Connected to the database successfully");
-
-        // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat");
-        System.out.println("Credentials ::"+ credential);
-
-
-        // Retrieving a collection
-        MongoCollection<Document> collection = database.getCollection("Posts");
-        FindIterable<Document> postsIt =  collection.find(eq("id", postInt));
-        List<Document> docs = new ArrayList<Document>();
-        for (Document document : postsIt) {
-            docs.add(document);
-            System.out.println(document);
-        }
-
-
-        return docs;
-
-    }
-
-
-
+    /**
+     * getAllComment
+     * Connects to the database using the mongoclient and queries the database to get all the comment documents
+     * These are then returned as a list
+     * @param postInt - postId of the comments we want to get from the db
+     * @param mongo - Our mongoclient to connect to the DB
+     * @return
+     */
     public List<Document>  getAllComment(Integer postInt, MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
@@ -231,7 +178,6 @@ public class Comment {
         // Accessing the database
         MongoDatabase database = mongo.getDatabase("appyChat");
         System.out.println("Credentials ::"+ credential);
-
 
         // Retrieving a collection
         MongoCollection<Document> collection = database.getCollection("Comments");
@@ -245,35 +191,15 @@ public class Comment {
         return docs;
     }
 
-    public String insertPostPojo(Post newpost, MongoClient mongo){
-        MongoCredential credential;
-        credential = MongoCredential.createCredential("sampleUser", "myDb",
-                "password".toCharArray());
-        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
-                fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-        System.out.println("Connected to the database successfully");
-
-        // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat").withCodecRegistry(pojoCodecRegistry);
-        System.out.println("Credentials ::"+ credential);
-
-        Person ada = new Person();
-        // Retrieving a collection
-        String status = "OK";
-        try{
-            MongoCollection<Post> collection = database.getCollection("Posts" , Post.class);
-
-            collection.withCodecRegistry(pojoCodecRegistry);
-            collection.countDocuments();
-            collection.insertOne(newpost);
-        }catch (Exception ex){
-            status = ex.getMessage();
-        }
-
-
-        return status;
-    }
-
+    /**
+     * addComment
+     * Connects to the Posts database using the monoclient and some custom codecs
+     * Once connected the documents are retrieved and then a new comment document is added
+     * The status of the insert is returned
+     * @param newComment - The comment we want to add to the DB
+     * @param mongo - Our mongo client which allows us to connect to the DB
+     * @return
+     */
     public String  addComment(Comment newComment, MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
@@ -303,29 +229,11 @@ public class Comment {
     }
 
 
-    public String  addReply(Integer commentInt,  MongoClient mongo, Reply reply){
-        MongoCredential credential;
-        credential = MongoCredential.createCredential("sampleUser", "myDb",
-                "password".toCharArray());
-        System.out.println("Connected to the database successfully");
-
-        // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat");
-        System.out.println("Credentials ::"+ credential);
-        MongoCollection<Document> collection = database.getCollection("Comments");
-        Document comment = collection.find(eq("id", commentInt)).first();
-        comment.append("reply", reply);
-        //collection.insertOne(comment);
-        // Retrieving a collection
-
-        return "ok";
-    }
-
     /**
      * AddReaction
-     * Connects to the database using the mongoclient and queries the database to get the post we want to add to
+     * Connects to the database using the mongoclient and queries the database to get the comment we want to add to
      * Once connected we create a new reaction document and push it to the reaction list array
-     * @param postInt - The Id of the post we want to update
+     * @param postInt - The Id of the comment we want to update
      * @param mongo - Our mongoclient to connect to the DB
      * @param newReact - The new reaction we want to add
      * @return
@@ -368,48 +276,6 @@ public class Comment {
             status = ex.getMessage();
         }
 
-        /**
-         * public String addreaction(Integer postInt, MongoClient mongo, Reaction newReact){
-         *         MongoCredential credential;
-         *         credential = MongoCredential.createCredential("sampleUser", "myDb",
-         *                 "password".toCharArray());
-         *         CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
-         *                 fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-         *         System.out.println("Connected to the database successfully");
-         *
-         *         // Accessing the database
-         *         MongoDatabase database = mongo.getDatabase("appyChat").withCodecRegistry(pojoCodecRegistry);
-         *         System.out.println("Credentials ::"+ credential);
-         *
-         *
-         *         // Retrieving a collection
-         *         MongoCollection<Document> collection = database.getCollection("Posts");
-         *         String status = "success";
-         *         try{
-         *             Document react = new Document().append("Created", newReact.Created)
-         *                     .append("Reaction",newReact.Reaction)
-         *                     .append("ReactedBy",newReact.ReactedBy);
-         *             collection.find(exists("reaction")).first();
-         *             collection.updateOne(eq("_id", "postInt"),Updates.addToSet("reaction", react));
-         *             collection.updateOne(eq("_id", "postInt").
-         *         }catch (Exception ex){
-         *             status = ex.getMessage();
-         *         }
-         *
-         *
-         *
-         *
-         *
-         *
-         */
-
-
-
-
-
         return status;
     }
-
-
-
 }

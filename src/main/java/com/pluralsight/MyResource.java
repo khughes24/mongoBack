@@ -207,6 +207,11 @@ public class MyResource {
     //Comment
     //----------------------------------------
 
+    /**
+     * dbgComments
+     * Creates a debug comment which is returned to the user
+     * @return
+     */
     @GET
     @Path("/comments/dbg")
     @Produces(MediaType.APPLICATION_JSON)
@@ -235,8 +240,13 @@ public class MyResource {
     }
 
 
-
-    //THIS WORKS
+    /**
+     * GetComments
+     * Gets all comments for the parsed postId
+     * This is returned as a list to the user
+     * @param postId - The postId for the requested comments
+     * @return
+     */
     @GET
     @Path("/{postId}/comments")
     @Produces(MediaType.APPLICATION_JSON)
@@ -260,7 +270,14 @@ public class MyResource {
         }
     }
 
-    //THIS WORKS
+    /**
+     * addComment
+     * Add a new comment to a postId
+     * Returns the status of the insert
+     * @param postId - The postId of the post we want to add a comment to
+     * @param newComment - The new comment we want to add to the post
+     * @return
+     */
     @POST
     @Path("/{postId}/comments")
     @Produces(MediaType.APPLICATION_JSON)
@@ -280,7 +297,16 @@ public class MyResource {
         }
     }
 
-    //WORKING
+
+    /**
+     * updateComment
+     * Updates a target comment of a target post with the parsed text
+     * Returns the status of the update
+     * @param postId - The postId of the post we want to work with
+     * @param commentId - The commentId of the comment we want to update
+     * @param newText - The new text to update
+     * @return
+     */
     @POST
     @Path("/{postId}/comments/{commentId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -301,7 +327,14 @@ public class MyResource {
         }
     }
 
-    //WORKING
+    /**
+     * deleteComment
+     * Deletes the target comment
+     * Returns the status of the deletion
+     * @param postId - The postId of the post we want to work with
+     * @param commentId - The commentId of the comment we want to delete
+     * @return
+     */
     @DELETE
     @Path("/{postId}/comments/{commentId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -320,6 +353,16 @@ public class MyResource {
             return Response.status(Response.Status.NOT_FOUND).entity("").build();
         }
     }
+
+    /**
+     * commentReaction
+     * Adds a new reaction to the target comment
+     * Returns the status of the add
+     * @param postId - The postId of the post we want to work with
+     * @param commentId - The commentId of the comment we want to add the new reaction to
+     * @param newReact - The new reaction we want to add to
+     * @return
+     */
     @POST
     @Path("/{postId}/comments/reactions/{commentId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -349,6 +392,13 @@ public class MyResource {
     //--------------------------------------------------------
     //Reply stuff
     //----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * dbgReply
+     * Generates a dbg reply which can be used for testing
+     * Returns the dbg reply (the same each time)
+     * @return
+     */
     @GET
     @Path("/reply/dbg")
     @Produces(MediaType.APPLICATION_JSON)
@@ -365,7 +415,6 @@ public class MyResource {
         try {
             String json = mapper.writeValueAsString(docs);
             System.out.println("ResultingJSONstring = " + json);
-            //System.out.println(json);
             return Response.ok().entity(json).build();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -377,8 +426,14 @@ public class MyResource {
     }
 
 
-
-    //THIS WORKS
+    /**
+     * GetReplies
+     * Gets a list of replies for a certain comment in a post
+     * Returns the list of replies
+     * @param postId - The postId for the post we want to work with
+     * @param commentId - The commentId for the comment we want to get replies for
+     * @return
+     */
     @GET
     @Path("/{postId}/comments/{commentId}/replies")
     @Produces(MediaType.APPLICATION_JSON)
@@ -402,7 +457,15 @@ public class MyResource {
         }
     }
 
-    //THIS WORKS
+    /**
+     * addReply
+     * Adds a reply to the target comment of a post
+     * Returns the status of the add
+     * @param postId -The postId for the post we want to work with
+     * @param commentId - The commentId for the comment we want to get replies for
+     * @param newReply - The new reply we want to add to the comment
+     * @return
+     */
     @POST
     @Path("/{postId}/comments/{commentId}/replies")
     @Produces(MediaType.APPLICATION_JSON)
@@ -422,7 +485,14 @@ public class MyResource {
         }
     }
 
-    //WORKING
+    /**
+     * updateReply
+     * @param postId - The postId of the post we want to work with
+     * @param commentId - The commentId of the comment we want to work with
+     * @param replyId - The replyId of the reply we want to edit
+     * @param newString - The new string for the reply
+     * @return
+     */
     @POST
     @Path("/{postId}/comments/{commentId}/replies/{replyId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -442,7 +512,15 @@ public class MyResource {
         }
     }
 
-    //WORKING
+    /**
+     * deleteReply
+     * Deletes the target reply of a comment of a post
+     * Returns the status of the delete
+     * @param postId - The postId of the post we want to work with
+     * @param commentId - The commentId of the comment we want to work with
+     * @param replyId - The replyId of the reply we want to delete
+     * @return
+     */
     @DELETE
     @Path("/{postId}/comments/{commentId}/replies/{replyId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -462,6 +540,16 @@ public class MyResource {
         }
     }
 
+    /**
+     * replyReaction
+     * Adds a reaction to a specific reply
+     * Returns the status of the addition
+     * @param postId - The postId of the post we want to work with
+     * @param commentId The commentId of the comment we want to work with
+     * @param replyId - The replyId of the reply we want to work with
+     * @param newReact - The new reaction we want to add to the reply
+     * @return
+     */
     @POST
     @Path("/{postId}/comments/{commentId}/replies/reactions/{replyId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -482,9 +570,4 @@ public class MyResource {
         }
 
     }
-
-
-
-
-
 }

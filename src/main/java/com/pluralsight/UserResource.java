@@ -25,14 +25,14 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 public class UserResource {
 
     /**
-     * GetIt
-     * Simple test to see if the connection is working
+     * createToken
+     * Creates a token from the userId if the userid is valid
      * @return
      */
     @Path("/token")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createtoken(String userId){
+    public Response createToken(String userId){
         User user = new User();
         String token = user.createToken(userId);
         if(token.length() == 0){

@@ -101,6 +101,13 @@ public class Reply {
 
     }
 
+    /**
+     * deleteReply
+     * Connects to the database using the mongoclient and queries the database to delete the requested record
+     * @param replyInt - The Id of the reply we want to delete
+     * @param mongo - Our mongoclient to connect to the DB
+     * @return
+     */
     public String deleteReply(Integer replyInt, MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
@@ -120,30 +127,15 @@ public class Reply {
         return "Success";
     }
 
-
-    public String reactToReply(Integer replyInt, String reactionId, MongoClient mongo){
-        MongoCredential credential;
-        credential = MongoCredential.createCredential("sampleUser", "myDb",
-                "password".toCharArray());
-        System.out.println("Connected to the database successfully");
-
-        // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat");
-        System.out.println("Credentials ::"+ credential);
-        MongoCollection<Document> collection = database.getCollection("Replys");
-        Document reply = collection.find(eq("id", replyInt)).first();
-        Reaction reaction = new Reaction(reactionId, 1);
-        //reply.reaction.add(reaction);
-        ///ReactionCounts reactionCounts = new ReactionCounts();
-        //reply.reactionCounts = reactionCounts.updateReactionCounts(reply.reactionCounts, reactionId);
-
-        //System.out.println(result);
-        //if (result == null){
-          //  return "Error";
-        //}
-        return "Success";
-    }
-
+    /**
+     * updateReply
+     * Connects to the database using the mongoclient and queries the database to get the reply we want to update
+     * Once retrieved we send across our update request
+     * @param replyInt - The Id of the reply we want to update
+     * @param replyString - The new reply string that we want to update
+     * @param mongo - Our mongoclient to connect to the DB
+     * @return
+     */
     public String updateReply(Integer replyInt, String replyString,  MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
@@ -159,6 +151,15 @@ public class Reply {
         return "Success";
     }
 
+    /**
+     * addReply
+     * Connects to the Posts database using the monoclient and some custom codecs
+     * Once connected the documents are retrieved and then a new comment document is added
+     * The status of the insert is returned
+     * @param newReply - The reply we want to add to the DB
+     * @param mongo - Our mongo client which allows us to connect to the DB
+     * @return
+     */
     public String  addReply(Reply newReply, MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
@@ -187,6 +188,14 @@ public class Reply {
         return status;
     }
 
+    /**
+     * getReply
+     * Connects to the database using the mongoclient and queries the database to get all the reply documents
+     * These are then returned as a list
+     * @param commentId - postId of the replys we want to get from the db
+     * @param mongo - Our mongoclient to connect to the DB
+     * @return
+     */
     public List<Document> getReply(Integer commentId, MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
@@ -211,54 +220,11 @@ public class Reply {
     }
 
 
-
-    public String updateReplyText( MongoClient mongo, Integer replyId, String text){
-        MongoCredential credential;
-        credential = MongoCredential.createCredential("sampleUser", "myDb",
-                "password".toCharArray());
-        System.out.println("Connected to the database successfully");
-
-        // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat");
-        System.out.println("Credentials ::"+ credential);
-
-
-        // Retrieving a collection
-        MongoCollection<Document> collection = database.getCollection("Replys");
-        Document reply = collection.find(eq("id", replyId)).first();
-        reply.append("text", text);
-        //collection.insertOne(reply);
-
-        return "OK";
-    }
-
-    public String addReplyReaction( MongoClient mongo, Integer replyId, Reaction reaction){
-        MongoCredential credential;
-        credential = MongoCredential.createCredential("sampleUser", "myDb",
-                "password".toCharArray());
-        System.out.println("Connected to the database successfully");
-
-        // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat");
-        System.out.println("Credentials ::"+ credential);
-
-
-        // Retrieving a collection
-        MongoCollection<Document> collection = database.getCollection("Replys");
-        Document reply = collection.find(eq("id", replyId)).first();
-        List<Reaction> reactionList = (List<Reaction>) reply.get("reaction");
-        reactionList.add(reaction);
-        reply.append("reaction", reaction);
-        //collection.insertOne(reply);
-
-        return "OK";
-    }
-
     /**
      * AddReaction
-     * Connects to the database using the mongoclient and queries the database to get the post we want to add to
+     * Connects to the database using the mongoclient and queries the database to get the reply we want to add to
      * Once connected we create a new reaction document and push it to the reaction list array
-     * @param postInt - The Id of the post we want to update
+     * @param replyInt - The Id of the post we want to update
      * @param mongo - Our mongoclient to connect to the DB
      * @param newReact - The new reaction we want to add
      * @return
@@ -301,51 +267,7 @@ public class Reply {
             status = ex.getMessage();
         }
 
-        /**
-         * public String addreaction(Integer postInt, MongoClient mongo, Reaction newReact){
-         *         MongoCredential credential;
-         *         credential = MongoCredential.createCredential("sampleUser", "myDb",
-         *                 "password".toCharArray());
-         *         CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
-         *                 fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-         *         System.out.println("Connected to the database successfully");
-         *
-         *         // Accessing the database
-         *         MongoDatabase database = mongo.getDatabase("appyChat").withCodecRegistry(pojoCodecRegistry);
-         *         System.out.println("Credentials ::"+ credential);
-         *
-         *
-         *         // Retrieving a collection
-         *         MongoCollection<Document> collection = database.getCollection("Posts");
-         *         String status = "success";
-         *         try{
-         *             Document react = new Document().append("Created", newReact.Created)
-         *                     .append("Reaction",newReact.Reaction)
-         *                     .append("ReactedBy",newReact.ReactedBy);
-         *             collection.find(exists("reaction")).first();
-         *             collection.updateOne(eq("_id", "postInt"),Updates.addToSet("reaction", react));
-         *             collection.updateOne(eq("_id", "postInt").
-         *         }catch (Exception ex){
-         *             status = ex.getMessage();
-         *         }
-         *
-         *
-         *
-         *
-         *
-         *
-         */
-
-
-
-
-
         return status;
     }
-
-
-
-
-
 
 }

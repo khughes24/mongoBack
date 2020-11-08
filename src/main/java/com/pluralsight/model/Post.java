@@ -152,7 +152,7 @@ public class Post {
      * Once connected the documents are retrieved and then a new Post document is added
      * The status of the insert is returned
      *
-     * @param newpost - The post post we want to add to the DB
+     * @param newpost - The post we want to add to the DB
      * @param mongo - Our mongo client which allows us to connect to the DB
      * @return
      */
@@ -342,48 +342,6 @@ public class Post {
             status = ex.getMessage();
         }
 
-        /**
-         * public String addreaction(Integer postInt, MongoClient mongo, Reaction newReact){
-         *         MongoCredential credential;
-         *         credential = MongoCredential.createCredential("sampleUser", "myDb",
-         *                 "password".toCharArray());
-         *         CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
-         *                 fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-         *         System.out.println("Connected to the database successfully");
-         *
-         *         // Accessing the database
-         *         MongoDatabase database = mongo.getDatabase("appyChat").withCodecRegistry(pojoCodecRegistry);
-         *         System.out.println("Credentials ::"+ credential);
-         *
-         *
-         *         // Retrieving a collection
-         *         MongoCollection<Document> collection = database.getCollection("Posts");
-         *         String status = "success";
-         *         try{
-         *             Document react = new Document().append("Created", newReact.Created)
-         *                     .append("Reaction",newReact.Reaction)
-         *                     .append("ReactedBy",newReact.ReactedBy);
-         *             collection.find(exists("reaction")).first();
-         *             collection.updateOne(eq("_id", "postInt"),Updates.addToSet("reaction", react));
-         *             collection.updateOne(eq("_id", "postInt").
-         *         }catch (Exception ex){
-         *             status = ex.getMessage();
-         *         }
-         *
-         *
-         *
-         *
-         *
-         *
-         */
-
-
-
-
-
         return status;
     }
-
-
-
 }
