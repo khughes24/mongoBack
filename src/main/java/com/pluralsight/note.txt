@@ -1,0 +1,199 @@
+
+    //----------------------------------------
+    //Comment
+    //----------------------------------------
+    //THIS WORKS
+    @GET
+    @Path("/posts/{postId}/comments")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response GetComments(@PathParam ("postId") String postId) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        //String connectionString = System.getProperty("mongodb.uri");
+
+        Comment comment = new Comment();
+        List<Document> docs = comment.getAllComment(Integer.valueOf(postId), mongoClient);
+        JSONConverter converter = new JSONConverter();
+        String json = "";
+        for(Document d : docs){
+            json = json + converter.convertDoctoJson(d);
+        }
+        if(docs.size() >0 ){
+            return Response.ok().entity(json).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }
+
+    //THIS WORKS
+    @POST
+    @Path("/posts/{postId}/comments")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addComment(@PathParam ("postId") String postId) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        //String connectionString = System.getProperty("mongodb.uri");
+
+        Comment comment = new Comment();
+        Comment newComment = new Comment();
+        String docs = comment.addComment(newComment, mongoClient);
+
+        if(docs.equals("SUCCESS") ){
+            return Response.ok().entity(docs).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }
+
+    //WORKING
+    @PATCH
+    @Path("/posts/{postId}/comments/{commentId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateComment(@PathParam ("postId") String postId,
+                                  @PathParam ("commentId") String commentId) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        //String connectionString = System.getProperty("mongodb.uri");
+
+        Comment comment = new Comment();
+        String docs = comment.updateComment(Integer.valueOf(commentId),"Test",mongoClient);
+
+        if(docs.equals("SUCCESS") ){
+            return Response.ok().entity(docs).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }
+
+    //WORKING
+    @DELETE
+    @Path("/posts/{postId}/comments/{commentId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteComment(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        //String connectionString = System.getProperty("mongodb.uri");
+
+        Comment comment = new Comment();
+        String docs = comment.deleteComment(Integer.valueOf(commentId),mongoClient);
+
+        if(docs.equals("SUCCESS") ){
+            return Response.ok().entity(docs).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }
+
+//DO reactions
+
+
+
+
+
+
+    //--------------------------------------------------------
+    //Reply stuff
+    //----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    //THIS WORKS
+    @GET
+    @Path("/posts/{postId}/comments/{commentId}/replies")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response GetReplies(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        //String connectionString = System.getProperty("mongodb.uri");
+
+        Reply reply = new Reply();
+        List<Document> docs = reply.getReply(Integer.valueOf(commentId), mongoClient);
+        JSONConverter converter = new JSONConverter();
+        String json = "";
+        for(Document d : docs){
+            json = json + converter.convertDoctoJson(d);
+        }
+        if(docs.size() > 0 ){
+            return Response.ok().entity(json).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }
+
+    //THIS WORKS
+    @POST
+    @Path("/posts/{postId}/comments/{commentId}/replies")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId, Reply newReply) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        //String connectionString = System.getProperty("mongodb.uri");
+
+        Reply reply = new Reply();
+        String docs = reply.addReply(newReply, mongoClient);
+
+        if(docs.equals("SUCCESS")){
+            return Response.ok().entity(docs).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }
+
+    //WORKING
+    @PATCH
+    @Path("/posts/{postId}/comments/{commentId}/replies/{replyId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId,@PathParam ("replyId") String replyId, String newString) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        //String connectionString = System.getProperty("mongodb.uri");
+
+        Reply reply = new Reply();
+        String docs = reply.updateReply(Integer.valueOf(replyId),newString,mongoClient);
+
+        if(docs.equals("SUCCESS")){
+            return Response.ok().entity(docs).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }
+
+    //WORKING
+    @DELETE
+    @Path("/posts/{postId}/comments/{commentId}/replies/{replyId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId,@PathParam ("replyId") String replyId) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        //String connectionString = System.getProperty("mongodb.uri");
+
+        Reply reply = new Reply();
+        String docs = reply.deleteReply(Integer.valueOf(replyId),mongoClient);
+
+        if(docs.equals("SUCCESS")){
+            return Response.ok().entity(docs).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }
+
+
+    //add reactions
+
+
+ //THIS WORKS
+    @PATCH
+    @Path("/{postId}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response testUpdate(@PathParam ("postId") String postId, String newText) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+
+        Post post = new Post();
+        String docs = post.updatePost(Integer.valueOf(postId),"testy2", mongoClient);
+
+        if(docs.equals("SUCCESS") ){
+            return Response.ok().entity(docs).build();
+
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+    }

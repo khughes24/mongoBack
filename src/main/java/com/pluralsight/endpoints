@@ -1,0 +1,82 @@
+Endpoints
+
+
+addPost
+updatePost
+deletePost
+reactToPost
+addPostComment
+updateComment
+deleteComment
+reactToComment
+replyToComment
+updateReply
+deleteReply
+reactToReply
+getPostList
+getPost
+
+
+ Check all this stuff
+-----
+
+Post
+----
+addPost
+updatePost --- half done
+deletePost --- sorta done
+reactToPost --half done
+getPostList --- sorta done
+getPost --- sorta done
+DEBUG --DONE
+----
+
+Comment
+---
+addPostComment
+updateComment --half done
+deleteComment --sorta done
+reactToComment --half done
+DEBUG --Done
+getComment --Done
+---
+
+reply
+---
+replyToComment
+updateReply --half done
+deleteReply --sorta done
+reactToReply --sorta done
+DEBUG --Done
+getReply --Done
+---
+
+
+
+USE JAVA DATETIME for datetimes
+offsetdatetime
+use string for the timebeing if broken
+
+
+
+
+Get list of posts	GET	/posts done -CHECKED
+Get a single post	GET	/posts/{postId}done -CHECKED
+Add a post	POST	/postsdone -CHECKED
+Modify the text of a post	PATCH	/posts/{postId} -done -CHECKED
+Remove a post	DELETE	/posts/{postId} -done -CHECKED But not deleting for some reason
+Add a reaction to a post	POST	/posts/{postId}/reactions -CHECKED But not reacting for some reason
+
+
+Get the comments for a post	GET	/posts/{postId]/comments done
+Add a comment to a post	POST	/posts/[postId}/comments done
+Modify the text of a comment	PATCH	/posts/{postId}/comments/{commentId} done
+Add a reaction to a comment	POST	/posts/{postId}/comments/{commentId}/reactions done
+Remove a post comment	DELETE	/posts/{postId}/comments/{commentId}
+
+
+Get the replies for a comment	GET	/posts/{postId}/comments/{commentId}/replies done
+Add a reply to a comment	POST	/posts/{postId}/comments/{commentId}/replies done
+Modify the text of a reply	PATCH	/posts/{postId}/comments/{commentId}/replies/{replyId}
+Add a reaction to a reply	POST	/posts/{postId}/comments/{commentId}/replies/{replyId}
+Remove a reply	DELETE	/posts/{postId}/comments/{commentId}/replies/{replyId}
