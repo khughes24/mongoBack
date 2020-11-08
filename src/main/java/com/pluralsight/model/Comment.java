@@ -212,9 +212,22 @@ public class Comment {
         MongoDatabase database = mongo.getDatabase("appyChat").withCodecRegistry(pojoCodecRegistry);
         System.out.println("Credentials ::"+ credential);
 
-        Person ada = new Person();
         // Retrieving a collection
         String status = "OK";
+
+        //Check if the comment we are about to add exists in the DB yet
+        try{
+            List<Document> doc = this.getAllComment(newComment.postId, mongo);
+            if(doc.size() == 0){
+                status = "Comment already exists in DB";
+                return status;
+            }
+        }catch (Exception ex){
+            status = ex.getMessage();
+            return status;
+        }
+
+
         try{
             MongoCollection<Comment> collection = database.getCollection("Comments" , Comment.class);
 

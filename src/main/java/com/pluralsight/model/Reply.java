@@ -172,9 +172,21 @@ public class Reply {
         MongoDatabase database = mongo.getDatabase("appyChat").withCodecRegistry(pojoCodecRegistry);
         System.out.println("Credentials ::"+ credential);
 
-        Person ada = new Person();
         // Retrieving a collection
         String status = "OK";
+
+        //Check if the comment we are about to add exists in the DB yet
+        try{
+            List<Document> doc = this.getReply(newReply.id, mongo);
+            if(doc.size() == 0){
+                status = "Reply already exists in DB";
+                return status;
+            }
+        }catch (Exception ex){
+            status = ex.getMessage();
+            return status;
+        }
+
         try{
             MongoCollection<Reply> collection = database.getCollection("Replys" , Reply.class);
 

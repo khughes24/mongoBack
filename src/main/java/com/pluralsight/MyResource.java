@@ -3,20 +3,12 @@ package com.pluralsight;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.FindIterable;
 import com.pluralsight.model.*;
-import io.swagger.annotations.Api;
 import org.bson.Document;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.PojoCodecProvider;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;

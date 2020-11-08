@@ -170,8 +170,24 @@ public class Post {
 
         // Retrieving a collection
         String status = "OK";
+
+        //Check if the post we are about to add exists in the DB yet
+        try{
+            Document doc = this.getPost(newpost.id, mongo);
+            if(doc.size() == 0){
+                status = "Post already exists in DB";
+                return status;
+            }
+        }catch (Exception ex){
+            status = ex.getMessage();
+            return status;
+        }
+
+
+
         try{
             MongoCollection<Post> collection = database.getCollection("Posts" , Post.class);
+
 
             collection.withCodecRegistry(pojoCodecRegistry);
             collection.countDocuments();

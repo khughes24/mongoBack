@@ -9,6 +9,7 @@ import com.pluralsight.model.*;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.types.ObjectId;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -22,7 +23,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Path("system")
-public class UserResource {
+public class SystemResource {
 
     /**
      * createToken
@@ -42,6 +43,19 @@ public class UserResource {
         }else{
             return Response.ok().entity(token).build();
         }
+    }
+
+    /**
+     * createObjectId
+     * Creates an objectId which can be used when adding to the DB
+     * @return
+     */
+    @Path("/objectId")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response createObjectId(String userId){
+        ObjectId id = new ObjectId();
+        return Response.ok().entity(id).build();
     }
 
 }
