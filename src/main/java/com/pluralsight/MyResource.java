@@ -542,6 +542,11 @@ public class MyResource {
      * @param newReact - The new reaction we want to add to the reply
      * @return
      */
+
+    //NOTE!
+    // The endpoint should be /posts/{postId}/comments/{commentId}/replies/{replyId} but this clashes with the update endpoint
+    // which has had to be change in order to get these sections working
+
     @POST
     @Path("/{postId}/comments/{commentId}/replies/reactions/{replyId}")
     @Produces(MediaType.APPLICATION_JSON)

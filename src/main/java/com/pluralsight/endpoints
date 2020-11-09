@@ -79,4 +79,4 @@ Get the replies for a comment	GET	/posts/{postId}/comments/{commentId}/replies d
 Add a reply to a comment	POST	/posts/{postId}/comments/{commentId}/replies done
 Modify the text of a reply	PATCH	/posts/{postId}/comments/{commentId}/replies/{replyId}
 Add a reaction to a reply	POST	/posts/{postId}/comments/{commentId}/replies/{replyId}
-Remove a reply	DELETE	/posts/{postId}/comments/{commentId}/replies/{replyId}
+Remove a reply	DELETE	            /posts/{postId}/comments/{commentId}/replies/{replyId}
