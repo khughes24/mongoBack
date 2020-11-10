@@ -34,6 +34,46 @@ public class MyResource {
     //-------------post---------------------------------------------
 
     /**
+     * dbgPosts
+     * Creates a debug post which is returned to the user
+     * @return
+     */
+    @GET
+    @Path("/dbg")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response dbgPosts(AuthToken authToken) {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+        User user = new User();
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(authToken.token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
+
+        Post post = new Post();
+        Post docs = post.debugPost();
+        String str = docs.toString();
+        JSONConverter converter = new JSONConverter();
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String json = mapper.writeValueAsString(docs);
+            System.out.println("ResultingJSONstring = " + json);
+            //System.out.println(json);
+            return Response.ok().entity(json).build();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        if (str.length() > 0){
+            return Response.ok().entity(str).build();
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("").build();
+        }
+
+    }
+
+
+    /**
      * GetPost
      * Creates a new post object and then calls getpost to get the requested post
      * @param postId - The post we want to get
@@ -41,11 +81,16 @@ public class MyResource {
      */
     @GET
     @Path("/{postId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPost(@PathParam ("postId") String postId) {
+    public Response getPost(@PathParam ("postId") String postId, String token) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
         if(postId.equals("")){
             return Response.status(Response.Status.NOT_FOUND).entity("").build();
         }
@@ -70,11 +115,16 @@ public class MyResource {
      * @return
      */
     @GET
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPostList() {
+    public Response getPostList(String token) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
         Post post = new Post();
         List<Document> docs = post.getPostList( mongoClient);
         JSONConverter converter = new JSONConverter();
@@ -98,13 +148,18 @@ public class MyResource {
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addPost(Post newPost) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addPost(PostInput newPost) {
 
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(newPost.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
         Post post = new Post();
-        String docs = post.insertPostPojo(newPost, mongoClient);
+        String docs = post.insertPostPojo(newPost.post, mongoClient);
 
         if(docs.equals("SUCCESS") ){
             return Response.ok().entity(docs).build();
@@ -122,10 +177,16 @@ public class MyResource {
      */
     @DELETE
     @Path("/{postId}")
-    public Response postDelete(@PathParam ("postId") String postId) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postDelete(@PathParam ("postId") String postId, String token) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Post post = new Post();
         String docs = post.deletePost(Integer.valueOf(postId), mongoClient);
@@ -142,19 +203,24 @@ public class MyResource {
      * PostUpdate
      * Creates a new post object and then calls updatePost to update the requested post
      * @param postId - The new post we want to add
-     * @param newText - The new post text we want to update the DB with
+     * @param updateInput - The new post text we want to update the DB with
      * @return
      */
     @POST
     @Path("/{postId}")
-    @Consumes(MediaType.TEXT_PLAIN)
-    public Response postUpdate(@PathParam ("postId") String postId, String newText) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postUpdate(@PathParam ("postId") String postId, UpdateInput updateInput) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(updateInput.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Post post = new Post();
-        String docs = post.updatePost(Integer.valueOf(postId),newText, mongoClient);
+        String docs = post.updatePost(Integer.valueOf(postId),updateInput.updateString, mongoClient);
 
         if(docs.equals("SUCCESS") ){
             return Response.ok().entity(docs).build();
@@ -169,19 +235,24 @@ public class MyResource {
      * PostReactions
      * Creates a new post object and then calls addreaction to update the requested post with the new reaction
      * @param postId - The new post we want to add
-     * @param newReact - The new reaction we want to add to the post
+     * @param reaction - The new reaction we want to add to the post
      * @return
      */
     @POST
     @Path("/{postId}/reactions")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postReaction(@PathParam ("postId") Integer postId, Reaction newReact) {
+    public Response postReaction(@PathParam ("postId") Integer postId, ReactionInput reaction) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(reaction.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Post post = new Post();
-        Reaction remakeReact = new Reaction(newReact.Reaction,newReact.ReactedBy);
+        Reaction remakeReact = new Reaction(reaction.reaction.Reaction,reaction.reaction.ReactedBy);
         String docs = post.addreaction(Integer.valueOf(postId), mongoClient,remakeReact);
 
         if(docs.equals("SUCCESS") ){
@@ -206,11 +277,16 @@ public class MyResource {
      */
     @GET
     @Path("/comments/dbg")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response dbgComments() {
+    public Response dbgComments(AuthToken authToken) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(authToken.token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Comment comment = new Comment();
         Comment docs = comment.debugComment();
@@ -241,11 +317,16 @@ public class MyResource {
      */
     @GET
     @Path("/{postId}/comments")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response GetComments(@PathParam ("postId") String postId) {
+    public Response GetComments(@PathParam ("postId") String postId, AuthToken authToken) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(authToken.token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Comment comment = new Comment();
         List<Document> docs = comment.getAllComment(Integer.valueOf(postId), mongoClient);
@@ -272,14 +353,19 @@ public class MyResource {
      */
     @POST
     @Path("/{postId}/comments")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addComment(@PathParam ("postId") String postId, Comment newComment) {
+    public Response addComment(@PathParam ("postId") String postId, CommentInput newComment) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(newComment.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Comment comment = new Comment();
-        String docs = comment.addComment(newComment, mongoClient);
+        String docs = comment.addComment(newComment.comment, mongoClient);
 
         if(docs.equals("SUCCESS") ){
             return Response.ok().entity(docs).build();
@@ -296,20 +382,25 @@ public class MyResource {
      * Returns the status of the update
      * @param postId - The postId of the post we want to work with
      * @param commentId - The commentId of the comment we want to update
-     * @param newText - The new text to update
+     * @param updateInput - The new text to update
      * @return
      */
     @POST
     @Path("/{postId}/comments/{commentId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateComment(@PathParam ("postId") String postId,
-                                  @PathParam ("commentId") String commentId, String newText) {
+                                  @PathParam ("commentId") String commentId, UpdateInput updateInput) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(updateInput.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Comment comment = new Comment();
-        String docs = comment.updateComment(Integer.valueOf(commentId),newText,mongoClient);
+        String docs = comment.updateComment(Integer.valueOf(commentId),updateInput.updateString,mongoClient);
 
         if(docs.equals("SUCCESS") ){
             return Response.ok().entity(docs).build();
@@ -329,11 +420,16 @@ public class MyResource {
      */
     @DELETE
     @Path("/{postId}/comments/{commentId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteComment(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId) {
+    public Response deleteComment(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId, AuthToken authToken) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(authToken.token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Comment comment = new Comment();
         String docs = comment.deleteComment(Integer.valueOf(commentId),mongoClient);
@@ -357,14 +453,19 @@ public class MyResource {
      */
     @POST
     @Path("/{postId}/comments/reactions/{commentId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response commentReaction(@PathParam ("postId") Integer postId,@PathParam ("commentId") String commentId, Reaction newReact) {
+    public Response commentReaction(@PathParam ("postId") Integer postId,@PathParam ("commentId") String commentId, ReactionInput newReact) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(newReact.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Comment comment = new Comment();
-        Reaction remakeReact = new Reaction(newReact.Reaction,newReact.ReactedBy);
+        Reaction remakeReact = new Reaction(newReact.reaction.Reaction,newReact.reaction.ReactedBy);
         String docs = comment.addreaction(Integer.valueOf(postId),Integer.valueOf(commentId), mongoClient,remakeReact);
 
         if(docs.equals("SUCCESS") ){
@@ -393,11 +494,16 @@ public class MyResource {
      */
     @GET
     @Path("/reply/dbg")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response dbgReply() {
+    public Response dbgReply(AuthToken authToken) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(authToken.token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Reply reply = new Reply();
         Reply docs = reply.debugReply();
@@ -428,11 +534,16 @@ public class MyResource {
      */
     @GET
     @Path("/{postId}/comments/{commentId}/replies")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response GetReplies(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId) {
+    public Response GetReplies(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId, AuthToken authToken) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(authToken.token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Reply reply = new Reply();
         List<Document> docs = reply.getReply(Integer.valueOf(commentId), mongoClient);
@@ -460,14 +571,19 @@ public class MyResource {
      */
     @POST
     @Path("/{postId}/comments/{commentId}/replies")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId, Reply newReply) {
+    public Response addReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId, ReplyInput newReply) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(newReply.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Reply reply = new Reply();
-        String docs = reply.addReply(newReply, mongoClient);
+        String docs = reply.addReply(newReply.reply, mongoClient);
 
         if(docs.equals("Success")){
             return Response.ok().entity(docs).build();
@@ -487,14 +603,19 @@ public class MyResource {
      */
     @POST
     @Path("/{postId}/comments/{commentId}/replies/{replyId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId,@PathParam ("replyId") String replyId, String newString) {
+    public Response updateReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId,@PathParam ("replyId") String replyId, UpdateInput newString) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(newString.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Reply reply = new Reply();
-        String docs = reply.updateReply(Integer.valueOf(replyId),newString,mongoClient);
+        String docs = reply.updateReply(Integer.valueOf(replyId),newString.updateString,mongoClient);
 
         if(docs.equals("Success")){
             return Response.ok().entity(docs).build();
@@ -515,12 +636,16 @@ public class MyResource {
      */
     @DELETE
     @Path("/{postId}/comments/{commentId}/replies/{replyId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId,@PathParam ("replyId") String replyId) {
+    public Response deleteReply(@PathParam ("postId") String postId,@PathParam ("commentId") String commentId,@PathParam ("replyId") String replyId, AuthToken authToken) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
-
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(authToken.token);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
         Reply reply = new Reply();
         String docs = reply.deleteReply(Integer.valueOf(replyId),mongoClient);
 
@@ -549,14 +674,19 @@ public class MyResource {
 
     @POST
     @Path("/{postId}/comments/{commentId}/replies/reactions/{replyId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response replyReaction(@PathParam ("postId") Integer postId,@PathParam ("commentId") String commentId,@PathParam ("replyId") String replyId, Reaction newReact) {
+    public Response replyReaction(@PathParam ("postId") Integer postId,@PathParam ("commentId") String commentId,@PathParam ("replyId") String replyId, ReactionInput newReact) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
-        user.authorize("TEMPTOKEN");
+        // Check if the user is authoriszed to access this endpoint
+        boolean valid = user.authorize(newReact.authToken);
+        if(!valid){
+            return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
+        }
 
         Reply reply = new Reply();
-        Reaction remakeReact = new Reaction(newReact.Reaction,newReact.ReactedBy);
+        Reaction remakeReact = new Reaction(newReact.reaction.Reaction,newReact.reaction.ReactedBy);
         String docs = reply.addreaction(Integer.valueOf(postId),Integer.valueOf(commentId),Integer.valueOf(replyId), mongoClient,remakeReact);
 
         if(docs.equals("Success") ){
