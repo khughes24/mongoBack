@@ -43,8 +43,6 @@ public class Post {
     public Integer id;
     @BsonProperty(value = "author")
     public Integer author;
-    @BsonProperty(value = "created")
-    public Date created;
     @BsonProperty(value = "text")
     public String text;
     @BsonProperty(value = "multimedia")
@@ -75,7 +73,6 @@ public class Post {
         this._id = new ObjectId("507f1f77bcf86cd799439011"); ///Create an object id with a default value
         this.id = 12;
         this.author = 10;
-        this.created = new Date();
         this.text = "test text";
 
         //Gen multimedia strings
@@ -333,12 +330,13 @@ public class Post {
         System.out.println("Credentials ::"+ credential);
 
 
+
         // Retrieving a collection
         MongoCollection<Document> collection = database.getCollection("Posts");
         String status = "success";
         try{
 
-
+            //Add reaction to list
             Document stats = collection.find(eq("id", postInt))
                     .projection(fields(include("stats"), excludeId())).first();
             String statsJSON = stats.toJson();
@@ -354,10 +352,128 @@ public class Post {
             Bson updateOperation = push("reactions", react);
             UpdateOptions options = new UpdateOptions().upsert(true);
             UpdateResult updateResult = collection.updateOne(filter, updateOperation, options);
+            //End addition
+
+
+            //Add to count
+            Integer reactType = Integer.parseInt(newReact.Reaction);
+            MongoCollection<Post> collectionPost = database.getCollection("Posts" , Post.class);
+            Post post = collectionPost.find(eq("id", postInt)).first();
+            post.stats.reactionCounts = this.statChanger(post.stats.reactionCounts, reactType);
+            collection.updateOne(Filters.eq("id", postInt), Updates.set("stats.reactionCounts", post.stats.reactionCounts));
+            //End count add
+
         }catch (Exception ex){
             status = ex.getMessage();
         }
 
         return status;
     }
+
+
+
+
+    /**
+     * AddReaction
+     * Connects to the database using the mongoclient and queries the database to get the post we want to add to
+     * Once connected we create a new reaction document and push it to the reaction list array
+     * @param mongo - Our mongoclient to connect to the DB
+     * @return
+     */
+    public String addStat(MongoClient mongo){
+        MongoCredential credential;
+        credential = MongoCredential.createCredential("sampleUser", "myDb",
+                "password".toCharArray());
+        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+                fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+        System.out.println("Connected to the database successfully");
+
+        Integer reactType = 7;
+
+        // Accessing the database
+        MongoDatabase database = mongo.getDatabase("appyChat").withCodecRegistry(pojoCodecRegistry);
+        System.out.println("Credentials ::"+ credential);
+        String status = "";
+
+        try{
+            MongoCollection<Post> collection = database.getCollection("Posts" , Post.class);
+            Post post = collection.find(eq("id", 1)).first();
+            post.stats.reactionCounts = this.statChanger(post.stats.reactionCounts, reactType);
+            collection.updateOne(Filters.eq("id", 1), Updates.set("stats.reactionCounts", post.stats.reactionCounts));
+
+
+
+
+
+
+
+            status = post.text;
+
+
+
+        }catch (Exception ex){
+            status = ex.getMessage();
+        }
+
+
+
+
+        return status;
+    }
+
+    public ReactionCounts statChanger(ReactionCounts reactionCounts, Integer reactType){
+        switch (reactType){
+            case 1:
+                reactionCounts.Angry ++;
+                break;
+            case 2:
+                reactionCounts.Awesome ++;
+                break;
+            case 3:
+                reactionCounts.Boring ++;
+                break;
+            case 4:
+                reactionCounts.Care ++;
+                break;
+            case 5:
+                reactionCounts.Crazy ++;
+                break;
+            case 6:
+                reactionCounts.FakeNews ++;
+                break;
+            case 7:
+                reactionCounts.Haha ++;
+                break;
+            case 8:
+                reactionCounts.Lame ++;
+                break;
+            case 9:
+                reactionCounts.Legal ++;
+                break;
+            case 10:
+                reactionCounts.Like ++;
+                break;
+            case 11:
+                reactionCounts.Love ++;
+                break;
+            case 12:
+                reactionCounts.Meal ++;
+                break;
+            case 13:
+                reactionCounts.Sad ++;
+                break;
+            case 14:
+                reactionCounts.Scary ++;
+                break;
+            case 15:
+                reactionCounts.Wow ++;
+                break;
+        }
+        return reactionCounts;
+    }
+
+
+
+
+
 }

@@ -285,6 +285,18 @@ public class Comment {
             Bson updateOperation = push("reactions", react);
             UpdateOptions options = new UpdateOptions().upsert(true);
             UpdateResult updateResult = collection.updateOne(filter, updateOperation, options);
+
+
+            //Add to count
+            Integer reactType = Integer.parseInt(newReact.Reaction);
+            MongoCollection<Comment> collectionPost = database.getCollection("Comment" , Comment.class);
+            Comment comment = collectionPost.find(eq("id", commentInt)).first();
+            Post post = new Post();
+            comment.reactionCounts = post.statChanger(comment.reactionCounts, reactType);
+            collection.updateOne(Filters.eq("id", commentInt), Updates.set("stats.reactionCounts", comment.reactionCounts));
+            //End count add
+
+
         }catch (Exception ex){
             status = ex.getMessage();
         }

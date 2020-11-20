@@ -113,7 +113,7 @@ public class MyResource {
      * GetPostList
      * Creates a new post object and then calls getPostList to get all the posts
      * @return
-     */
+    */
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -137,7 +137,7 @@ public class MyResource {
 
         }else{
             return Response.status(Response.Status.NOT_FOUND).entity("").build();
-        }
+         }
     }
 
     /**
@@ -263,6 +263,28 @@ public class MyResource {
         }
 
     }
+
+
+
+    /**
+     * updateStats
+     * updateStats test
+     * @return
+     */
+    @GET
+    @Path("/stat")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String stats() {
+        MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+
+        Post post = new Post();
+        String docs = post.addStat(mongoClient);
+        return docs;
+
+    }
+
+
+
 
 
 
