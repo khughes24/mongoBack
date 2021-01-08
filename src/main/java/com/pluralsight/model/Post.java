@@ -170,8 +170,8 @@ public class Post {
 
         //Check if the post we are about to add exists in the DB yet
         try{
-            Document doc = this.getPost(newpost.id, mongo);
-            if(doc.size() == 0){
+            Post doc = this.getPost(newpost.id, mongo);
+            if(doc._id.toString().equals("")){
                 status = "Post already exists in DB";
                 return status;
             }
@@ -205,20 +205,54 @@ public class Post {
      * @param mongo - Our mongoclient to connect to the DB
      * @return
      */
-    public Document getPost(Integer postInt, MongoClient mongo){
+    public Post getPost(Integer postInt, MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
                 "password".toCharArray());
+        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+                fromProviders(PojoCodecProvider.builder().automatic(true).build()));
         System.out.println("Connected to the database successfully");
 
         // Accessing the database
-        MongoDatabase database = mongo.getDatabase("appyChat");
+        MongoDatabase database = mongo.getDatabase("appyChat").withCodecRegistry(pojoCodecRegistry);
         System.out.println("Credentials ::"+ credential);
-
+        PostResponse postResponse = new PostResponse();
 
         // Retrieving a collection
-        MongoCollection<Document> collection = database.getCollection("Posts");
-        Document post = collection.find(eq("id", postInt)).first();
+        MongoCollection<Post> collection = database.getCollection("Posts" , Post.class);
+        Post post = collection.find(eq("id", postInt)).first();
+
+        //create the post response
+        postResponse.id = post._id;
+        postResponse.createdDateTime = new Date();
+        postResponse.modifiedDateTime = new Date();
+        postResponse.text = post.text;
+        StatsResponse statsResponse = new StatsResponse();
+
+        Comment comment = new Comment();
+        List<Document>  commentList =  new ArrayList<Document>();
+        commentList = comment.getAllComment(post.id, mongo);
+        statsResponse.commentCount = commentList.size();
+        statsResponse.shares = post.stats.shares;
+        statsResponse.reactionCount = post.stats.reactionCounts;
+
+        CommentResponse commentResponse = new CommentResponse();
+        commentResponse.id = commentList.get(0).getObjectId(_id);
+        //commentResponse.author.username = String.valueOf(commentList.get(0).getInteger("user"));
+        Document test = commentList.get(0);
+        Integer testint = test.getInteger("user");
+        Author tempAuthor = new Author();
+        tempAuthor.username = String.valueOf(testint);
+        commentResponse.author = tempAuthor;
+        commentResponse.createdDateTime = new Date();
+        commentResponse.createdDateTime = new Date();
+        commentResponse.text = commentList.get(0).getString(text);
+        commentResponse.stats = (Stats) commentList.get(0).getList(stats,Stats.class);
+        postResponse.comment = commentResponse;
+
+
+
+
 
         return post;
     }
@@ -231,7 +265,7 @@ public class Post {
      * @param mongo - Our mongoclient to connect to the DB
      * @return
      */
-    public List<Document> getPostList(MongoClient mongo){
+    public List<PostResponse> getPostList(MongoClient mongo){
         MongoCredential credential;
         credential = MongoCredential.createCredential("sampleUser", "myDb",
                 "password".toCharArray());
@@ -242,16 +276,41 @@ public class Post {
         System.out.println("Credentials ::"+ credential);
 
         // Retrieving a collection
-        MongoCollection<Document> collection = database.getCollection("Posts");
-        FindIterable<Document> postsIt =  collection.find();
+        MongoCollection<Post> collection = database.getCollection("Posts", Post.class);
+        FindIterable<Post> postsIt =  collection.find();
 
         // Loop through our list of Iterables to create a new list of documents
-        List<Document> docs = new ArrayList<Document>();
-        for (Document document : postsIt) {
-            docs.add(document);
+        List<Post> docs = new ArrayList<Post>();
+        List<PostResponse> postResponses = new ArrayList<PostResponse>();
+        for (Post document : postsIt) {
+            PostResponse postResponse = new PostResponse();
+            postResponse.id = document._id;
+            postResponse.createdDateTime = new Date();
+            postResponse.modifiedDateTime = new Date();
+            postResponse.text = document.text;
+            StatsResponse statsResponse = new StatsResponse();
+
+            Comment comment = new Comment();
+            List<Document>  commentList =  new ArrayList<Document>();
+            commentList = comment.getAllComment(document.id, mongo);
+            statsResponse.commentCount = commentList.size();
+            statsResponse.shares = document.stats.shares;
+            statsResponse.reactionCount = document.stats.reactionCounts;
+            CommentResponse commentResponse = new CommentResponse();
+            commentResponse.id = commentList.get(0).getObjectId(id);
+            commentResponse.author.username = commentList.get(0).getString(author);
+            commentResponse.createdDateTime = new Date();
+            commentResponse.createdDateTime = new Date();
+            commentResponse.text = commentList.get(0).getString(text);
+            commentResponse.stats = (Stats) commentList.get(0).getList(stats,Stats.class);
+            postResponse.comment = commentResponse;
+
+
+
+            postResponses.add(postResponse);
         }
 
-        return docs;
+        return postResponses;
 
     }
 

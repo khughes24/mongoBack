@@ -83,11 +83,11 @@ public class MyResource {
     @Path("/{postId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPost(@PathParam ("postId") String postId, String token) {
+    public Response getPost(@PathParam ("postId") String postId) {
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
         // Check if the user is authoriszed to access this endpoint
-        boolean valid = user.authorize(token);
+        boolean valid = user.authorize("a");
         if(!valid){
             return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
         }
@@ -96,13 +96,12 @@ public class MyResource {
         }
 
         Post post = new Post();
-        Document docs = post.getPost(Integer.valueOf(postId), mongoClient);
+        Post docs = post.getPost(Integer.valueOf(postId), mongoClient);
         JSONConverter converter = new JSONConverter();
         String json = "";
 
-        json = json + converter.convertDoctoJson(docs);
-        if(docs.size() >0 ){
-            return Response.ok().entity(json).build();
+        if(!(docs._id.toString().equals("")) ){
+            return Response.ok().entity(docs).build();
 
         }else{
             return Response.status(Response.Status.NOT_FOUND).entity("").build();
@@ -118,6 +117,7 @@ public class MyResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPostList(String token) {
+        ObjectMapper mapper = new ObjectMapper();
         MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
         User user = new User();
         // Check if the user is authoriszed to access this endpoint
@@ -126,11 +126,16 @@ public class MyResource {
             return Response.status(Response.Status.UNAUTHORIZED).entity("").build();
         }
         Post post = new Post();
-        List<Document> docs = post.getPostList( mongoClient);
+        List<PostResponse> docs = post.getPostList( mongoClient);
         JSONConverter converter = new JSONConverter();
         String json = "";
-        for(Document d : docs){
-            json = json + converter.convertDoctoJson(d);
+        //jsonResponse = mapper.writeValueAsString(prodList); //convert the objects into a outputable JSON string
+        for(PostResponse d : docs){
+            try {
+                json = json + mapper.writeValueAsString(d); //convert the objects into a outputable JSON string
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
         }
         if(docs.size() >0 ){
             return Response.ok().entity(json).build();
