@@ -39,8 +39,7 @@ You will then be able to make requests using the browser or postman
 Extra details:
 Swagger has been partically set up but i have been uable to get the swagger UI working. To access a very bare bones swagger please go to:
 http://localhost:8080/mavenTest_war2/webapi/swagger.json
-For some reason using PATCH requests breaks the pathing and methods for the API so i have switch it to use a POST instead. This is in the porcess of being fixed
-I am not able to retrieve the reactionCount for Post, Comment and Reply so i'm unable to add to their counts. I am still able to add to the reaction list though.
+For some reason using PATCH requests breaks the pathing and methods for the API so i have switch it to use a POST instead. This is in the process of being fixed.
 
 
 
